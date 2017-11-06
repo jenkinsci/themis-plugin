@@ -1,0 +1,9 @@
+# maven
+target
+
+# jenkins debugging files
+work
+
+# IntelliJ IDEA files
+.idea
+*.iml

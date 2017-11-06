@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    A plugin to send test reports and coverage files to Themis.
+</div>
