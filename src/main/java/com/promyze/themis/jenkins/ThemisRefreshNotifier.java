@@ -1,6 +1,7 @@
 package com.promyze.themis.jenkins;
 
 import com.promyze.themis.jenkins.ThemisGlobalConfiguration.ThemisInstance;
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -47,11 +48,11 @@ public class ThemisRefreshNotifier extends Notifier {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws AbortException {
         ThemisInstance instance = GlobalConfiguration.all().get(ThemisGlobalConfiguration.class)
                 .getInstance(instanceName);
         if (instance == null) {
-            throw new RuntimeException(Messages.unknownInstance(instanceName));
+            throw new AbortException(Messages.unknownInstance(instanceName));
         }
         // TODO actually refresh Themis
         listener.getLogger().println(String.format("Refreshing Themis: %s?apiKey=%s&projectKey=%s",
