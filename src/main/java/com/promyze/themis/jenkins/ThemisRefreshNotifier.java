@@ -27,11 +27,13 @@ public class ThemisRefreshNotifier extends Notifier {
 
     private String instanceName;
     private String projectKey;
+    private boolean failBuild;
 
     @DataBoundConstructor
-    public ThemisRefreshNotifier(String instanceName, String projectKey) {
+    public ThemisRefreshNotifier(String instanceName, String projectKey, boolean failBuild) {
         this.instanceName = instanceName;
         this.projectKey = projectKey;
+        this.failBuild = failBuild;
     }
 
     public String getInstanceName() {
@@ -40,6 +42,10 @@ public class ThemisRefreshNotifier extends Notifier {
 
     public String getProjectKey() {
         return projectKey;
+    }
+
+    public boolean getFailBuild() {
+        return failBuild;
     }
 
     @Override
@@ -52,7 +58,12 @@ public class ThemisRefreshNotifier extends Notifier {
         ThemisInstance instance = GlobalConfiguration.all().get(ThemisGlobalConfiguration.class)
                 .getInstance(instanceName);
         if (instance == null) {
-            throw new AbortException(Messages.unknownInstance(instanceName));
+            if (failBuild) {
+                throw new AbortException(Messages.unknownInstance(instanceName));
+            } else {
+                listener.getLogger().println(Messages.unknownInstance(instanceName));
+                return true;
+            }
         }
         // TODO actually refresh Themis
         listener.getLogger().println(String.format("Refreshing Themis: %s?apiKey=%s&projectKey=%s",

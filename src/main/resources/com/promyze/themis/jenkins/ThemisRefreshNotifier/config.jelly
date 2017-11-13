@@ -9,4 +9,8 @@
         <f:textbox/>
     </f:entry>
 
+    <f:entry field="failBuild">
+        <f:checkbox title="${%FailBuild}"/>
+    </f:entry>
+
 </j:jelly>
