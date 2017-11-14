@@ -5,13 +5,13 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.36</version>
+        <version>3.0</version>
         <relativePath />
     </parent>
 
-    <groupId>com.promyze.themis</groupId>
-    <artifactId>themis-jenkins-plugin</artifactId>
+    <artifactId>themis</artifactId>
     <name>Themis Plugin</name>
+    <description>Launch Themis as a post-build step.</description>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
