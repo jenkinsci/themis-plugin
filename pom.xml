@@ -50,4 +50,11 @@
             <version>1.4.9</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
 </project>
