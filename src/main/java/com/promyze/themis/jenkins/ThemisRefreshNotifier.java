@@ -7,10 +7,13 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.promyze.themis.jenkins.ThemisGlobalConfiguration.ThemisInstance;
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -18,9 +21,13 @@ import hudson.tasks.Publisher;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 import jenkins.model.GlobalConfiguration;
+import jenkins.tasks.SimpleBuildStep;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.PrintStream;
 import java.text.MessageFormat;
@@ -30,20 +37,19 @@ import java.util.stream.Collectors;
 /**
  * Sample notifier class
  */
-public class ThemisRefreshNotifier extends Notifier {
+public class ThemisRefreshNotifier extends Notifier implements SimpleBuildStep {
 
     private static final String REFRESH_URL_FORMAT = "{0}/api/refreshProject/{1}";
     private static final String THEMIS_API_KEY = "themis-api-key";
 
-    private String instanceName;
-    private String projectKey;
+    private final String instanceName;
+    private final String projectKey;
     private boolean failBuild;
 
     @DataBoundConstructor
-    public ThemisRefreshNotifier(String instanceName, String projectKey, boolean failBuild) {
+    public ThemisRefreshNotifier(String instanceName, String projectKey) {
         this.instanceName = instanceName;
         this.projectKey = projectKey;
-        this.failBuild = failBuild;
     }
 
     public String getInstanceName() {
@@ -58,6 +64,11 @@ public class ThemisRefreshNotifier extends Notifier {
         return failBuild;
     }
 
+    @DataBoundSetter
+    public void setFailBuild(boolean failBuild) {
+        this.failBuild = failBuild;
+    }
+
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
@@ -65,11 +76,25 @@ public class ThemisRefreshNotifier extends Notifier {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws AbortException {
-        PrintStream logger = listener.getLogger();
+        perform(listener.getLogger());
+        return true;
+    }
+
+    @Override
+    public void perform(@Nonnull Run<?, ?> run,
+                        @Nonnull FilePath filePath,
+                        @Nonnull Launcher launcher,
+                        @Nonnull TaskListener taskListener)
+            throws AbortException {
+        perform(taskListener.getLogger());
+    }
+
+    private void perform(PrintStream logger) throws AbortException {
         ThemisInstance instance = GlobalConfiguration.all().get(ThemisGlobalConfiguration.class)
                 .getInstance(instanceName);
         if (instance == null) {
-            return fail(logger, Messages.unknownInstance(instanceName));
+            fail(logger, Messages.unknownInstance(instanceName));
+            return;
         }
 
         try {
@@ -78,13 +103,11 @@ public class ThemisRefreshNotifier extends Notifier {
                 JsonNode node = new JsonNode(response.getBody());
                 logger.println(Messages.projectRefreshed(node.getObject().get("dataDisplayed")));
             } else {
-                return fail(logger, Messages.refreshError(response.getStatus(), response.getBody()));
+                fail(logger, Messages.refreshError(response.getStatus(), response.getBody()));
             }
-        } catch (UnirestException e) {
-            return fail(logger, Messages.refreshUnknownError(e.getMessage()));
+        } catch (UnirestException | RuntimeException e) {
+            fail(logger, Messages.refreshUnknownError(e.getMessage()));
         }
-
-        return true;
     }
 
     private HttpResponse<String> refreshThemis(ThemisInstance instance) throws UnirestException {
@@ -94,15 +117,15 @@ public class ThemisRefreshNotifier extends Notifier {
                 .asString();
     }
 
-    private boolean fail(PrintStream logger, String message) throws AbortException {
+    private void fail(PrintStream logger, String message) throws AbortException {
         if (failBuild) {
             throw new AbortException(message);
         } else {
             logger.println(message);
-            return true;
         }
     }
 
+    @Symbol("themisRefresh")
     @Extension
     public static class Descriptor extends BuildStepDescriptor<Publisher> {
 
