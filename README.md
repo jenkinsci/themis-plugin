@@ -35,3 +35,9 @@ themisRefresh(instanceName: 'Some instance', projectKey: 'key')
 ```
 
 If you want errors to fail the build, add the `failBuild` parameter, set as `true`.
+
+
+## Proxy
+
+The plugin uses the Jenkins proxy configuration, in the “Advanced” tab of the “Manage plugins” configuration page. 
+Authentication, HTTPS, and exclusions are all supported.

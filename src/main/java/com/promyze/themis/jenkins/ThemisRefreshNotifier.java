@@ -1,9 +1,5 @@
 package com.promyze.themis.jenkins;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import com.promyze.themis.jenkins.ThemisGlobalConfiguration.ThemisInstance;
 import hudson.AbortException;
 import hudson.Extension;
@@ -22,13 +18,20 @@ import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 import jenkins.model.GlobalConfiguration;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.jenkinsci.Symbol;
+import org.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.List;
@@ -97,24 +100,27 @@ public class ThemisRefreshNotifier extends Notifier implements SimpleBuildStep {
             return;
         }
 
-        try {
-            HttpResponse<String> response = refreshThemis(instance);
-            if (response.getStatus() == 200) {
-                JsonNode node = new JsonNode(response.getBody());
-                logger.println(Messages.projectRefreshed(node.getObject().get("dataDisplayed")));
+        try (CloseableHttpClient httpClient = HttpClientUtils.getClient();
+             CloseableHttpResponse response = refreshThemis(httpClient, instance)) {
+            int statusCode = response.getStatusLine().getStatusCode();
+            String body = EntityUtils.toString(response.getEntity());
+            if (statusCode == 200) {
+                JSONObject result = new JSONObject(body);
+                logger.println(Messages.projectRefreshed(result.get("dataDisplayed")));
             } else {
-                fail(logger, Messages.refreshError(response.getStatus(), response.getBody()));
+                fail(logger, Messages.refreshError(statusCode, body));
             }
-        } catch (UnirestException | RuntimeException e) {
+        } catch (IOException | RuntimeException e) {
             fail(logger, Messages.refreshUnknownError(e.getMessage()));
         }
     }
 
-    private HttpResponse<String> refreshThemis(ThemisInstance instance) throws UnirestException {
+    private CloseableHttpResponse refreshThemis(CloseableHttpClient client, ThemisInstance instance)
+            throws IOException {
         String url = MessageFormat.format(REFRESH_URL_FORMAT, instance.getUrl(), projectKey);
-        return Unirest.get(url)
-                .header(THEMIS_API_KEY, instance.getApiKey())
-                .asString();
+        HttpGet request = new HttpGet(url);
+        request.setHeader(THEMIS_API_KEY, instance.getApiKey());
+        return client.execute(request);
     }
 
     private void fail(PrintStream logger, String message) throws AbortException {
