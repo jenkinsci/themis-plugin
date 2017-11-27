@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.promyze.themis.jenkins.FormValidationUtils.checkNotNullOrEmpty;
+
 /**
  * Global configuration for the Themis Jenkins plugin
  */
@@ -109,12 +111,6 @@ public class ThemisGlobalConfiguration extends GlobalConfiguration {
                     return FormValidation.ok();
                 } catch (FormValidation formValidation) {
                     return formValidation;
-                }
-            }
-
-            private void checkNotNullOrEmpty(String value, String message) throws FormValidation {
-                if (value == null || value.length() == 0) {
-                    throw FormValidation.error(message);
                 }
             }
 
