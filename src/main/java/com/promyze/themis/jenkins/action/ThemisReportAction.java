@@ -36,6 +36,8 @@ import java.util.concurrent.Future;
  */
 public class ThemisReportAction extends ThemisAction {
 
+    private static final long serialVersionUID = 1L;
+
     public static final String TYPE_KEY = "type";
     public static final String PATH_KEY = "path";
 

@@ -8,10 +8,14 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.GlobalConfiguration;
 
+import java.io.Serializable;
+
 /**
  * Base for classes that perform action on a Themis instance.
  */
-public abstract class ThemisAction {
+public abstract class ThemisAction implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     static final String THEMIS_API_KEY = "themis-api-key";
 

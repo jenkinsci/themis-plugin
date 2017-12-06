@@ -20,6 +20,8 @@ import java.text.MessageFormat;
  */
 public class ThemisRefreshAction extends ThemisAction {
 
+    private static final long serialVersionUID = 1L;
+
     private static final String REFRESH_URL_FORMAT = "{0}/api/refreshProject/{1}";
 
     private final String projectKey;

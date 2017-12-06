@@ -96,6 +96,8 @@ public class ThemisReportStep extends Step {
 
     private static class Execution extends SynchronousStepExecution {
 
+        private static final long serialVersionUID = 1L;
+
         private final ThemisReportAction action;
 
         private Execution(StepContext context, ThemisReportAction action) {
