@@ -1,0 +1,36 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+
+    <j:set var="instances" value="${descriptor.getInstances()}"/>
+    <j:choose>
+        <j:when test="${empty(instances)}">
+            <f:entry title="${%Instance}">
+                <div class="error">${%NoInstances}</div>
+            </f:entry>
+        </j:when>
+        <j:otherwise>
+            <f:entry title="${%Instance}" field="instanceName">
+                <f:select/>
+            </f:entry>
+        </j:otherwise>
+    </j:choose>
+
+    <f:entry title="${%SourceKey}" field="sourceKey">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="failBuild">
+        <f:checkbox title="${%FailBuild}"/>
+    </f:entry>
+
+    <f:entry title="${%ReportFiles}">
+        <f:repeatableProperty field="reportFiles" add="${%AddReportFile}" minimum="1">
+            <f:entry title="">
+                <div align="right">
+                    <f:repeatableDeleteButton value="${%RemoveReportFile}"/>
+                </div>
+            </f:entry>
+        </f:repeatableProperty>
+    </f:entry>
+
+</j:jelly>
