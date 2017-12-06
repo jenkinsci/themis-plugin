@@ -151,22 +151,20 @@ public class ThemisReportAction extends ThemisAction {
 
     private void addScmInfo(JSONObject metadata, Run<?, ?> run, TaskListener listener)
             throws IOException, InterruptedException {
-        retrieveEnvVars(run, listener);
-        String gitCommit = envVars.get("GIT_COMMIT");
+        EnvVars vars = getVars(run, listener);
+        String gitCommit = vars.get("GIT_COMMIT");
         if (gitCommit != null) {
             metadata.put(COMMIT_ATTRIBUTE, gitCommit);
-            metadata.put(BRANCH_ATTRIBUTE, envVars.get("GIT_BRANCH"));
+            metadata.put(BRANCH_ATTRIBUTE, vars.get("GIT_BRANCH"));
         }
-        String svnRevision = envVars.get("SVN_REVISION");
+        String svnRevision = vars.get("SVN_REVISION");
         if (svnRevision != null) {
             metadata.put(COMMIT_ATTRIBUTE, svnRevision);
         }
     }
 
-    private void retrieveEnvVars(Run<?, ?> run, TaskListener listener) throws IOException, InterruptedException {
-        if (envVars == null) {
-            envVars = run.getEnvironment(listener);
-        }
+    private EnvVars getVars(Run<?, ?> run, TaskListener listener) throws IOException, InterruptedException {
+        return envVars != null ? envVars : run.getEnvironment(listener);
     }
 
     private JSONObject copyMetadata(JSONObject metadata, String type) {

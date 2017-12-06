@@ -92,3 +92,17 @@ withEnv(["SVN_REVISION=${sh(returnStdout: true, script: 'svn info --show-item la
 
 The plugin uses the Jenkins proxy configuration, in the “Advanced” tab of the “Manage plugins” configuration page.
 Authentication, HTTPS, and exclusions are all supported.
+
+## Changelog
+
+**1.2.1**:
+- Fix a bug where old commit ID was sent
+
+**1.2**:
+- Add a post build action and a step to send report files to Themis
+
+**1.1**:
+- Add support for http proxy
+
+**1.0**:
+- Initial release
