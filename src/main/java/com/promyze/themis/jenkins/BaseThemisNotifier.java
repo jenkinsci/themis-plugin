@@ -85,11 +85,11 @@ public abstract class BaseThemisNotifier<T extends ThemisAction> extends Notifie
         private ThemisGlobalConfiguration globalConfiguration;
 
         public ListBoxModel doFillInstanceNameItems(@QueryParameter String instanceName) {
-            return new ListBoxModel(globalConfiguration.getInstances().stream()
-                                            .map(i -> new ListBoxModel.Option(i.getName(),
-                                                                              i.getName(),
-                                                                              i.getName().equals(instanceName)))
-                                            .collect(Collectors.toList()));
+            return globalConfiguration.getInstances().stream()
+                    .map(i -> new ListBoxModel.Option(i.getName(),
+                                                      i.getName(),
+                                                      i.getName().equals(instanceName)))
+                    .collect(Collectors.toCollection(ListBoxModel::new));
         }
 
         public List<ThemisInstance> getInstances() {
