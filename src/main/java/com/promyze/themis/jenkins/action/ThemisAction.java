@@ -17,8 +17,6 @@ public abstract class ThemisAction implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final String THEMIS_API_KEY = "themis-api-key";
-
     private final String instanceName;
     private boolean failBuild;
 

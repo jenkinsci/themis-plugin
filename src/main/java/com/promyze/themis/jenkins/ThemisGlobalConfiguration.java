@@ -6,11 +6,17 @@ import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +28,8 @@ import static com.promyze.themis.jenkins.FormValidationUtils.checkNotNullOrEmpty
  */
 @Extension
 public class ThemisGlobalConfiguration extends GlobalConfiguration {
+
+    public static final String THEMIS_API_KEY = "themis-api-key";
 
     private volatile List<ThemisInstance> instances = new ArrayList<>();
 
@@ -39,7 +47,7 @@ public class ThemisGlobalConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest req, JSONObject json) {
         this.instances = req.bindJSONToList(ThemisInstance.class, json.get("instances"));
         save();
         return true;
@@ -78,7 +86,8 @@ public class ThemisGlobalConfiguration extends GlobalConfiguration {
         @Extension
         public static class ThemisInstanceDescriptor extends Descriptor<ThemisInstance> {
 
-            public static final String VALID_URL_PATTERN = "^https?://.+";
+            private static final String VALID_URL_PATTERN = "^https?://.+";
+            private static final String TEST_URL_FORMAT = "{0}/api/testConnection";
 
             @Override
             public String getDisplayName() {
@@ -112,6 +121,34 @@ public class ThemisGlobalConfiguration extends GlobalConfiguration {
                 } catch (FormValidation formValidation) {
                     return formValidation;
                 }
+            }
+
+            public FormValidation doTestConnection(@QueryParameter String url, @QueryParameter String apiKey) {
+                try (CloseableHttpClient client = HttpClientUtils.getClient();
+                     CloseableHttpResponse response = client.execute(getTestRequest(url, apiKey))) {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    switch (statusCode) {
+                        case 200:
+                        case 404: // when testing on an old Themis instance
+                            return FormValidation.ok(Messages.testOk());
+                        case 401:
+                        case 403:
+                        case 500: // when testing on an old Themis instance
+                            return FormValidation.error(Messages.authenticationError());
+                        default:
+                            return FormValidation.error(Messages.validationFailure(statusCode));
+                    }
+                } catch (HttpHostConnectException e) {
+                    return FormValidation.error(Messages.noConnection());
+                } catch (IOException e) {
+                    return FormValidation.error(e, Messages.validationError());
+                }
+            }
+
+            private HttpGet getTestRequest(String url, String apiKey) {
+                HttpGet request = new HttpGet(MessageFormat.format(TEST_URL_FORMAT, url));
+                request.setHeader(THEMIS_API_KEY, apiKey);
+                return request;
             }
 
         }

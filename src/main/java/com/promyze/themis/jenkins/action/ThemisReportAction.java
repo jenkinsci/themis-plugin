@@ -3,6 +3,7 @@ package com.promyze.themis.jenkins.action;
 import com.promyze.themis.jenkins.HttpClientUtils;
 import com.promyze.themis.jenkins.Messages;
 import com.promyze.themis.jenkins.ReportFile;
+import com.promyze.themis.jenkins.ThemisGlobalConfiguration;
 import com.promyze.themis.jenkins.ThemisGlobalConfiguration.ThemisInstance;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -238,7 +239,7 @@ public class ThemisReportAction extends ThemisAction {
         String url = MessageFormat.format(REPORT_URL_FORMAT, instance.getUrl(), sourceKey);
 
         HttpPost request = new HttpPost(url);
-        request.setHeader(THEMIS_API_KEY, instance.getApiKey());
+        request.setHeader(ThemisGlobalConfiguration.THEMIS_API_KEY, instance.getApiKey());
         request.setEntity(getArchiveEntity(metadata, inputStream));
 
         return client.execute(request);

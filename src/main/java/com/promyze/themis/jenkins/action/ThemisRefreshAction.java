@@ -2,6 +2,7 @@ package com.promyze.themis.jenkins.action;
 
 import com.promyze.themis.jenkins.HttpClientUtils;
 import com.promyze.themis.jenkins.Messages;
+import com.promyze.themis.jenkins.ThemisGlobalConfiguration;
 import com.promyze.themis.jenkins.ThemisGlobalConfiguration.ThemisInstance;
 import hudson.FilePath;
 import hudson.model.Run;
@@ -68,7 +69,7 @@ public class ThemisRefreshAction extends ThemisAction {
             throws IOException {
         String url = MessageFormat.format(REFRESH_URL_FORMAT, instance.getUrl(), projectKey);
         HttpGet request = new HttpGet(url);
-        request.setHeader(THEMIS_API_KEY, instance.getApiKey());
+        request.setHeader(ThemisGlobalConfiguration.THEMIS_API_KEY, instance.getApiKey());
         return client.execute(request);
     }
 
