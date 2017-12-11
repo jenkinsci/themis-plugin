@@ -95,6 +95,14 @@ Authentication, HTTPS, and exclusions are all supported.
 
 ## Changelog
 
+**1.3**:
+
+- Add a button to test connection with Themis instance in global configuration
+
+**1.2.3**:
+
+- Modify the version of workflow step api to be more inclusive
+
 **1.2.1**:
 - Fix a bug where old commit ID was sent
 
