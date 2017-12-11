@@ -6,6 +6,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
  */
 public abstract class BaseThemisNotifier<T extends ThemisAction> extends Notifier {
 
+    private boolean onlyOnSuccess = true;
+
     /**
      * The inner action.
      */
@@ -40,6 +43,15 @@ public abstract class BaseThemisNotifier<T extends ThemisAction> extends Notifie
      */
     protected BaseThemisNotifier(T action) {
         this.action = action;
+    }
+
+    public boolean isOnlyOnSuccess() {
+        return onlyOnSuccess;
+    }
+
+    @DataBoundSetter
+    public void setOnlyOnSuccess(boolean onlyOnSuccess) {
+        this.onlyOnSuccess = onlyOnSuccess;
     }
 
     /**
@@ -72,7 +84,10 @@ public abstract class BaseThemisNotifier<T extends ThemisAction> extends Notifie
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-        action.perform(build, build.getWorkspace(), listener);
+        Result result = build.getResult();
+        if (!onlyOnSuccess || (result != null && result.isBetterOrEqualTo(Result.SUCCESS))) {
+            action.perform(build, build.getWorkspace(), listener);
+        }
         return true;
     }
 

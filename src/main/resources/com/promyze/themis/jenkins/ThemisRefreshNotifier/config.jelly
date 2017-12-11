@@ -19,8 +19,13 @@
         <f:textbox/>
     </f:entry>
 
-    <f:entry field="failBuild">
-        <f:checkbox title="${%FailBuild}"/>
-    </f:entry>
+    <f:advanced>
+        <f:entry field="failBuild">
+            <f:checkbox title="${%FailBuild}"/>
+        </f:entry>
+        <f:entry field="onlyOnSuccess">
+            <f:checkbox title="${%OnlyOnSuccess}"/>
+        </f:entry>
+    </f:advanced>
 
 </j:jelly>
