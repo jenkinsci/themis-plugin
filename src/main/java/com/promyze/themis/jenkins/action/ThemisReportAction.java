@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -198,10 +199,15 @@ public class ThemisReportAction extends ThemisAction {
             outputStream.connect(inputStream);
             ExecutorService executor = Executors.newFixedThreadPool(2);
 
-            Future<Exception> archiveTask = submitArchiveTask(executor, outputStream, workspace, paths);
             Future<Result> sendArchiveTask = submitSendArchiveTask(executor, inputStream, instance, metadata);
+            Future<Exception> archiveTask = submitArchiveTask(executor, sendArchiveTask, outputStream, workspace,
+                                                              paths);
 
-            return checkResult(getType(metadata), archiveTask.get(), sendArchiveTask.get());
+            try {
+                return checkResult(getType(metadata), archiveTask.get(), sendArchiveTask.get());
+            } catch (CancellationException e) {
+                return new Result(getType(metadata), e);
+            }
         }
     }
 
@@ -209,13 +215,18 @@ public class ThemisReportAction extends ThemisAction {
         return exception == null ? result : new Result(type, exception);
     }
 
-    private Future<Exception> submitArchiveTask(ExecutorService executor, PipedOutputStream outputStream,
-                                                FilePath workspace, List<String> paths) {
+    private Future<Exception> submitArchiveTask(ExecutorService executor,
+                                                Future<?> requestFuture,
+                                                PipedOutputStream outputStream,
+                                                FilePath workspace,
+                                                List<String> paths) {
         return executor.submit(() -> {
             try {
                 workspace.zip(outputStream, String.join(",", paths));
                 return null;
             } catch (IOException | InterruptedException e) {
+                requestFuture.cancel(true);
+                outputStream.close();
                 return e;
             }
         });
@@ -284,7 +295,7 @@ public class ThemisReportAction extends ThemisAction {
     }
 
     private enum Status {
-        SUCCESS, ABORTED, FAILED;
+        SUCCESS, ABORTED, FAILED
     }
 
 }
