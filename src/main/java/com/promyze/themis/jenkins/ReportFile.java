@@ -18,6 +18,7 @@ public class ReportFile extends AbstractDescribableImpl<ReportFile> implements S
 
     private static final String[] SUPPORTED_TYPES = {
             "Cobertura",
+            "Jacoco",
             "ReSharper",
             "PMD",
             "Checkstyle"
