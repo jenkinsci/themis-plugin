@@ -21,7 +21,8 @@ public class ReportFile extends AbstractDescribableImpl<ReportFile> implements S
             "Jacoco",
             "ReSharper",
             "PMD",
-            "Checkstyle"
+            "Checkstyle",
+            "Cppcheck"
     };
 
     private static final long serialVersionUID = 1L;
