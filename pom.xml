@@ -12,7 +12,7 @@
     <name>Themis Plugin</name>
     <description>Launch Themis as a post-build step.</description>
     <url>https://wiki.jenkins.io/display/JENKINS/Themis+Plugin</url>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.4.1</version>
     <packaging>hpi</packaging>
 
     <properties>
@@ -32,7 +32,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/themis-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/themis-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/themis-plugin</url>
-        <tag>HEAD</tag>
+        <tag>themis-1.4.1</tag>
     </scm>
 
     <developers>
